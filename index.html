@@ -6,165 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Portfolio</title>
     <style>
-        /* General Styles */
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        h1,
-        h2,
-        h3 {
-            color: #2c3e50;
-        }
-
-        a {
-            color: #3498db;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        /* Header */
-        header {
-            background-color: #2c3e50;
-            color: #fff;
-            padding: 60px 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            margin: 0;
-        }
-
-        header p {
-            font-size: 1.2rem;
-            margin: 10px 0 0;
-        }
-
-        /* Navigation */
-        nav {
-            background-color: #34495e;
-            padding: 10px 0;
-            text-align: center;
-        }
-
-        nav a {
-            color: #fff;
-            margin: 0 15px;
-            font-size: 1.1rem;
-        }
-
-        nav a:hover {
-            color: #3498db;
-        }
-
-        /* Sections */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        section {
-            margin: 40px 0;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        section h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #3498db;
-            display: inline-block;
-            padding-bottom: 5px;
-        }
-
-        /* Certificates Section */
-        .certificate-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .pdf-container {
-            width: 100%;
-            margin: 20px 0;
-            overflow: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-
-        canvas {
-            width: 100%;
-            height: auto;
-        }
-
-        img {
-            width: 100%;
-            height: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-
-        /* Resume and Publications Section */
-        .resume-link,
-        .publication-link {
-            display: inline-block;
-            margin: 10px 0;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: #fff;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .resume-link:hover,
-        .publication-link:hover {
-            background-color: #2980b9;
-        }
-
-        /* Footer */
-        footer {
-            background-color: #2c3e50;
-            color: #fff;
-            text-align: center;
-            padding: 20px 0;
-            margin-top: 40px;
-        }
-
-        footer p {
-            margin: 0;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 2rem;
-            }
-
-            header p {
-                font-size: 1rem;
-            }
-
-            nav a {
-                display: block;
-                margin: 10px 0;
-            }
-
-            .certificate-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        /* Your existing CSS styles */
     </style>
 </head>
 
@@ -234,33 +76,40 @@
         integrity="sha512-ml/QKfG3+Yes6TwOzQb7aCNtJF4PUyha6R3w8pSTo/VJSywl7ZreYvvtUso7fKevpsI+pYVVwnu82YO0q3V6eg=="
         crossorigin="anonymous"></script>
     <script>
-        // Function to render a PDF
-        function renderPDF(pdfUrl, containerId) {
+        // Function to render all pages of a PDF
+        async function renderPDF(pdfUrl, containerId) {
             const container = document.getElementById(containerId);
 
             // Load the PDF
-            pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-                // Render the first page
-                pdf.getPage(1).then(page => {
-                    const scale = 1.5;
-                    const viewport = page.getViewport({ scale });
+            const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
 
-                    // Create a canvas element
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
+            // Loop through all pages
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale });
 
-                    // Render the page on the canvas
-                    const renderContext = {
-                        canvasContext: context,
-                        viewport: viewport
-                    };
-                    page.render(renderContext).promise.then(() => {
-                        container.appendChild(canvas);
-                    });
-                });
-            });
+                // Create a canvas element for each page
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render the page on the canvas
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                await page.render(renderContext).promise;
+
+                // Append the canvas to the container
+                container.appendChild(canvas);
+
+                // Add a small space between pages
+                const spacer = document.createElement('div');
+                spacer.style.height = '20px';
+                container.appendChild(spacer);
+            }
         }
 
         // Render PDFs
@@ -278,7 +127,6 @@
         renderPDF('701ce2e9-25a1-4e57-aad9-c86c62c2b5ce.pdf', 'pdf-12');
         renderPDF('ba5b1007-1cf5-45c3-be43-f73acf5b7708.pdf', 'pdf-13');
         renderPDF('24aa338f-9d2c-4127-9f96-54eadc7ecdf0.pdf', 'pdf-14');
-
     </script>
 </body>
 
